@@ -21,10 +21,10 @@ function err() {
     errXTRACE=$(set +o | grep xtrace)
     set +o xtrace
     local msg="[ERROR] ${BASH_SOURCE[2]}:$1 $2"
-    echo $msg 1>&2;
-    if [[ -n ${SCREEN_LOGDIR} ]]; then
-        echo $msg >> "${SCREEN_LOGDIR}/error.log"
-    fi
+#    echo $msg 1>&2;
+    #if [[ -n ${SCREEN_LOGDIR} ]]; then
+        #echo $msg >> "${SCREEN_LOGDIR}/error.log"
+    #fi
     $errXTRACE
     return $exitcode
 }
@@ -33,9 +33,9 @@ function err() {
 function backtrace {
     local level=$1
     local deep=$((${#BASH_SOURCE[@]} - 1))
-    echo "[Call Trace]"
+#    echo "[Call Trace]"
     while [ $level -le $deep ]; do
-        echo "${BASH_SOURCE[$deep]}:${BASH_LINENO[$deep-1]}:${FUNCNAME[$deep-1]}"
+        #echo "${BASH_SOURCE[$deep]}:${BASH_LINENO[$deep-1]}:${FUNCNAME[$deep-1]}"
         deep=$((deep - 1))
     done
 }
@@ -67,8 +67,7 @@ function die_if_not_set() {
     local line=$1; shift
     local evar=$1; shift
     if ! is_set $evar || [ $exitcode != 0 ]; then
-        echo $evar 1>&2;
-        echo "[FAIL]"
+        echo "2 $evar" 1>&2;
         die $line "$*"
     fi
     $FXTRACE
@@ -91,8 +90,8 @@ createVpc() {
     if [[ $resp =~ $regex ]]; then
         VPCID="${BASH_REMATCH[1]}" 
     fi
-    die_if_not_set $LINENO $VPCID "Fail to create VPC"
-    echo "Successfully Created Vpc"
+    die_if_not_set $LINENO $VPCID "CreateVpc - Fail to create VPC"
+    echo "0 CreateVpc - Successfully Created Vpc"
 
 }
 
@@ -106,8 +105,8 @@ describeVpc() {
     if [[ $resp =~ $regex ]]; then
         VPCIDcheck="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $VPCIDcheck "Fail to describe VPC"
-    echo "Successfully Described Vpc"    
+    die_if_not_set $LINENO $VPCIDcheck "DescribeVpc - Fail to describe VPC"
+    echo "0 DescribeVpc - Successfully Described Vpc"    
 
 }
 
@@ -119,8 +118,8 @@ createSubnet() {
     if [[ $resp =~ $regex ]]; then
         SUBNETID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SUBNETID "Fail to create Subnet"
-    echo "Successfully Created Subnet"    
+    die_if_not_set $LINENO $SUBNETID "CreateSubnet - Fail to create Subnet"
+    echo "0 CreateSubnet - Successfully Created Subnet"    
 
 }
 
@@ -132,8 +131,8 @@ describeSubnet() {
     if [[ $resp =~ $regex ]]; then
         SUBNETIDCheck="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SUBNETIDCheck "Fail to describe Subnet"
-    echo "Successfully Described Subnet"    
+    die_if_not_set $LINENO $SUBNETIDCheck "DescribeSubnet - Fail to describe Subnet"
+    echo "0 DescribeSubnet - Successfully Described Subnet"    
 
 
 }
@@ -146,8 +145,8 @@ createSecurityGroup() {
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUP="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SECURITYGROUP "Fail to create SecurityGroup"
-    echo "Successfully Created Security Group"    
+    die_if_not_set $LINENO $SECURITYGROUP "CreateSecurityGroup - Fail to create SecurityGroup"
+    echo "0 CreateSecurityGroup - Successfully Created Security Group"    
 
 }
 
@@ -160,7 +159,7 @@ createSecurityGroupRules() {
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPRULEIN="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SECURITYGROUPRULEIN "Fail to create SecurityGroupRule - Ingress"
+    die_if_not_set $LINENO $SECURITYGROUPRULEIN "CreateSecurityGroupRules - Fail to create SecurityGroupRule - Ingress"
 
 
 
@@ -171,7 +170,7 @@ createSecurityGroupRules() {
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPRULEIN="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SECURITYGROUPRULEIN "Fail to create SecurityGroupRule - Ingress"
+    die_if_not_set $LINENO $SECURITYGROUPRULEIN "CreateSecurityGroupRules - Fail to create SecurityGroupRule - Ingress"
 
 
 
@@ -183,7 +182,7 @@ createSecurityGroupRules() {
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPRULEOUT="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SECURITYGROUPRULEOUT "Fail to create SecurityGroupRule - Egress"
+    die_if_not_set $LINENO $SECURITYGROUPRULEOUT "CreateSecurityGroupRules - Fail to create SecurityGroupRule - Egress"
 
 
 
@@ -207,7 +206,7 @@ createSecurityGroupRules() {
     #die_if_not_set $LINENO $REVSECURITYGROUPRULEOUT "Fail to create SecurityGroupRule - Egreass"
 
 
-    echo "Successfully Created/Deleted Security Group Rules"    
+    echo "0 CreateSecurityGroupRules - Successfully Created/Deleted Security Group Rules"    
 
 
 }
@@ -222,8 +221,8 @@ describeSeucrityGroup() {
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPIDCheck="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SECURITYGROUPIDCheck "Fail to describe Security Group"
-    echo "Successfully Described SecurityGroup" 
+    die_if_not_set $LINENO $SECURITYGROUPIDCheck "DescribeSeucrityGroup - Fail to describe Security Group"
+    echo "0 DescribeSeucrityGroup - Successfully Described SecurityGroup" 
 
 }
 
@@ -237,8 +236,8 @@ deleteSecurityGroup() {
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPDELETE="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $SECURITYGROUPDELETE "Fail to delete Security Group -- DO IT MANUALLY"
-    echo "Successfully Deleted SecurityGroup" 
+    die_if_not_set $LINENO $SECURITYGROUPDELETE "DeleteSecurityGroup - Fail to delete Security Group -- DO IT MANUALLY"
+    echo "0 DeleteSecurityGroup - Successfully Deleted SecurityGroup" 
 
 }
 
@@ -260,8 +259,8 @@ deleteSubnet() {
     #    echo "retrying delete Subnet..."
     #    sleep 300
     #done  
-    die_if_not_set $LINENO $SUBNETDELETE "Fail to delete Subnet -- DO IT MANUALLY"
-    echo "Successfully Deleted Subnet" 
+    die_if_not_set $LINENO $SUBNETDELETE "DeleteSubnet - Fail to delete Subnet -- DO IT MANUALLY"
+    echo "0 DeleteSubnet - Successfully Deleted Subnet" 
 
 }
 
@@ -275,8 +274,8 @@ deleteVpc () {
     if [[ $resp =~ $regex ]]; then
         VPCDELETE="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $VPCDELETE "Fail to delete VPC -- DO IT MANUALLY"
-    echo "Successfully Deleted VPC" 
+    die_if_not_set $LINENO $VPCDELETE "DeleteVpc - Fail to delete VPC -- DO IT MANUALLY"
+    echo "0 DeleteVpc - Successfully Deleted VPC" 
 
 
 }
@@ -289,8 +288,8 @@ terminateInstance () {
     if [[ $resp =~ $regex ]]; then
         TERMINATIONID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $TERMINATIONID "Fail to terminate instance -- DO IT MANUALLY"
-    echo "Successfully terminated instance" 
+    die_if_not_set $LINENO $TERMINATIONID "TerminateInstance - Fail to terminate instance -- DO IT MANUALLY"
+    echo "0 TerminateInstance - Successfully terminated instance" 
 
 
 }
@@ -306,8 +305,8 @@ runInstance () {
     if [[ $resp =~ $regex ]]; then
         INSTANCEID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $INSTANCEID "Fail to run Instance VPC -- DO IT MANUALLY"
-    echo "Successfully createdInstance VPC" 
+    die_if_not_set $LINENO $INSTANCEID "RunInstance - Fail to run Instance VPC -- DO IT MANUALLY"
+    echo "0 RunInstance - Successfully createdInstance VPC" 
 
 
 }
@@ -326,8 +325,8 @@ allocateAddress () {
     if [[ $resp =~ $regex ]]; then
         PUBLICIP="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $ALLOCATIONID "Fail to Allocate address"
-    echo "Successfully Allocated address" 
+    die_if_not_set $LINENO $ALLOCATIONID "AllocateAddress - Fail to Allocate address"
+    echo "0 AllocateAddress - Successfully Allocated address" 
 
 
 }
@@ -340,8 +339,8 @@ associateAddress () {
     if [[ $resp =~ $regex ]]; then
         ASSOCIATIONID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $ASSOCIATIONID "Fail to associate address"
-    echo "Successfully associate address" 
+    die_if_not_set $LINENO $ASSOCIATIONID "AssociateAddress - Fail to associate address"
+    echo "0 AssociateAddress - Successfully associate address" 
 
 }
 
@@ -354,8 +353,8 @@ describeAddresses() {
     if [[ $resp =~ $regex ]]; then
         DESCRIBEADD1="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $DESCRIBEADD1 "Fail to describe address"
-    echo "Successfully describe address" 
+    die_if_not_set $LINENO $DESCRIBEADD1 "DescribeAddresses - Fail to describe address"
+    echo "0 DescribeAddresses - Successfully describe address" 
 
 }
 
@@ -367,8 +366,8 @@ disassociateAddress () {
     if [[ $resp =~ $regex ]]; then
         DISASSOCIATIONID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $DISASSOCIATIONID "Fail to disassociate address"
-    echo "Successfully disassociated address" 
+    die_if_not_set $LINENO $DISASSOCIATIONID "DisassociateAddress - Fail to disassociate address"
+    echo "0 DisassociateAddress - Successfully disassociated address" 
 
 
 }
@@ -381,8 +380,8 @@ releaseAddress () {
     if [[ $resp =~ $regex ]]; then
         RELEASEID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $RELEASEID "Fail to release address"
-    echo "Successfully released address" 
+    die_if_not_set $LINENO $RELEASEID "ReleaseAddress - Fail to release address"
+    echo "0 ReleaseAddress - Successfully released address" 
 
 
 }
@@ -395,8 +394,8 @@ createRouteTable () {
     if [[ $resp =~ $regex ]]; then
         RTBID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $RTBID "Fail to createRouteTable"
-    echo "Successfully Created RouteTable" 
+    die_if_not_set $LINENO $RTBID "CreateRouteTable - Fail to createRouteTable"
+    echo "0 CreateRouteTable - Successfully Created RouteTable" 
 }
 
 
@@ -408,8 +407,8 @@ createRoute () {
     if [[ $resp =~ $regex ]]; then
         RT="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $RT "Fail to createRoute"
-    echo "Successfully Added Route" 
+    die_if_not_set $LINENO $RT "CreateRoute - Fail to createRoute"
+    echo "CreateRoute - Successfully Added Route" 
 }
 
 associateRouteTable () {
@@ -420,8 +419,8 @@ associateRouteTable () {
     if [[ $resp =~ $regex ]]; then
         ASSOCRTBID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $ASSOCRTBID "Fail to associate RouteTable"
-    echo "Successfully Associated RouteTable" 
+    die_if_not_set $LINENO $ASSOCRTBID "AssociateRouteTable - Fail to associate RouteTable"
+    echo "0 AssociateRouteTable - Successfully Associated RouteTable" 
 }
 
 
@@ -433,8 +432,8 @@ describeRouteTables () {
     if [[ $resp =~ $regex ]]; then
         CHECKRTBID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $CHECKRTBID "Fail to describe RouteTable"
-    echo "Successfully Described RouteTable" 
+    die_if_not_set $LINENO $CHECKRTBID "DescribeRouteTables - Fail to describe RouteTable"
+    echo "0 DescribeRouteTables - Successfully Described RouteTable" 
 }
 
 disassociateRouteTable () {
@@ -445,8 +444,8 @@ disassociateRouteTable () {
     if [[ $resp =~ $regex ]]; then
         DISASSOCRTBID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $DISASSOCRTBID "Fail to diassociate RouteTable"
-    echo "Successfully disassociated RouteTable" 
+    die_if_not_set $LINENO $DISASSOCRTBID "DisassociateRouteTable - Fail to diassociate RouteTable"
+    echo "0 DisassociateRouteTable - Successfully disassociated RouteTable" 
 }
 
 deleteRouteTable () {
@@ -457,8 +456,8 @@ deleteRouteTable () {
     if [[ $resp =~ $regex ]]; then
         DISASSOCRTBID="${BASH_REMATCH[1]}"
     fi
-    die_if_not_set $LINENO $DISASSOCRTBID "Fail to diassociate RouteTable"
-    echo "Successfully disassociated RouteTable" 
+    die_if_not_set $LINENO $DISASSOCRTBID "DeleteRouteTable - Fail to diassociate RouteTable"
+    echo "0 DeleteRouteTable - Successfully disassociated RouteTable" 
 }
 
 describeInstances() {
