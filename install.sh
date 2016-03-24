@@ -3,7 +3,9 @@
 #Parameters to configure
 export JCS_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 export JCS_SECRET_KEY=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-logfile=$(date +"%m_%d_%Y").log
+logfile=$(date +"%m_%d_%Y").txt
+VPCENDPOINT="vpc.ind-west-1.internal.jiocloudservices.com"
+COMENDPOINT="compute.ind-west-1.internal.jiocloudservices.com"
 iter=0
 #Check for environment
 #if [[ -z "$OS_AUTH_URL" || -z "$OS_USERNAME" || -z "$OS_PASSWORD" || -z "$OS_TENANT_NAME" ]]; then
@@ -84,9 +86,9 @@ function is_set() {
 #######################################
 
 createVpc() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=CreateVpc&CidrBlock=192.168.0.0/16&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=CreateVpc&CidrBlock=192.168.0.0/16&Version=2015-10-01") | source /dev/stdin)
     echo $resp > $logfile
-    #resp="<CreateVpcResponse xmlns=http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/> <requestId>req-725d1c36-ff69-4a64-988c-6dcb6815ed12</requestId> <vpc> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <cidrBlock>192.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </vpc> </CreateVpcResponse>"
+    #resp="<CreateVpcResponse xmlns=http://$VPCENDPOINT/doc/2015-10-01/> <requestId>req-725d1c36-ff69-4a64-988c-6dcb6815ed12</requestId> <vpc> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <cidrBlock>192.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </vpc> </CreateVpcResponse>"
     regex="<vpcId>(.*)</vpcId>"
     if [[ $resp =~ $regex ]]; then
         VPCID="${BASH_REMATCH[1]}" 
@@ -99,9 +101,9 @@ createVpc() {
 
 
 describeVpc() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DescribeVpcs&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DescribeVpcs&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<DescribeVpcsResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-a0481a19-3457-40be-bd94-1cac467f0076</requestId> <vpcSet> <item> <state>available</state> <vpcId>vpc-2528cb8d</vpcId> <cidrBlock>10.0.0.0/24</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> <item> <state>available</state> <vpcId>vpc-33ca30bf</vpcId> <cidrBlock>10.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> <item> <state>available</state> <vpcId>vpc-bb935f32</vpcId> <cidrBlock>192.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> <item> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <cidrBlock>192.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> </vpcSet> </DescribeVpcsResponse>"
+    #resp="<DescribeVpcsResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-a0481a19-3457-40be-bd94-1cac467f0076</requestId> <vpcSet> <item> <state>available</state> <vpcId>vpc-2528cb8d</vpcId> <cidrBlock>10.0.0.0/24</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> <item> <state>available</state> <vpcId>vpc-33ca30bf</vpcId> <cidrBlock>10.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> <item> <state>available</state> <vpcId>vpc-bb935f32</vpcId> <cidrBlock>192.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> <item> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <cidrBlock>192.168.0.0/16</cidrBlock> <isDefault>false</isDefault> <dhcpOptionsId>default</dhcpOptionsId> </item> </vpcSet> </DescribeVpcsResponse>"
     regex="($VPCID)"
     if [[ $resp =~ $regex ]]; then
         VPCIDcheck="${BASH_REMATCH[1]}"
@@ -112,7 +114,7 @@ describeVpc() {
 }
 
 createSubnet() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=CreateSubnet&VpcId=$VPCID&CidrBlock=192.168.1.0/24&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=CreateSubnet&VpcId=$VPCID&CidrBlock=192.168.1.0/24&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
     #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west0.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="<subnetId>(.*)</subnetId>"
@@ -125,9 +127,9 @@ createSubnet() {
 }
 
 describeSubnet() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DescribeSubnets&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DescribeSubnets&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="($SUBNETID)"
     if [[ $resp =~ $regex ]]; then
         SUBNETIDCheck="${BASH_REMATCH[1]}"
@@ -139,9 +141,9 @@ describeSubnet() {
 }
 
 createSecurityGroup() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=CreateSecurityGroup&GroupName=TestScript&GroupDescription=Automated_Group&VpcId=$VPCID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=CreateSecurityGroup&GroupName=TestScript&GroupDescription=Automated_Group&VpcId=$VPCID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSecurityGroupResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-134f3410-8ccc-481e-9f42-7644bdac1e93</requestId> <return>true</return> <groupId>sg-2280f124</groupId> </CreateSecurityGroupResponse>"
+    #resp="<CreateSecurityGroupResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-134f3410-8ccc-481e-9f42-7644bdac1e93</requestId> <return>true</return> <groupId>sg-2280f124</groupId> </CreateSecurityGroupResponse>"
     regex="<groupId>(.*)</groupId>"
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUP="${BASH_REMATCH[1]}"
@@ -153,9 +155,9 @@ createSecurityGroup() {
 
 
 createSecurityGroupRules() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=AuthorizeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=AuthorizeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<AuthorizeSecurityGroupIngressResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-d54ec7a7-201f-4f7a-88b0-b1bdcf9fe6e0</requestId> <return>true</return> </AuthorizeSecurityGroupIngressResponse>"
+    #resp="<AuthorizeSecurityGroupIngressResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-d54ec7a7-201f-4f7a-88b0-b1bdcf9fe6e0</requestId> <return>true</return> </AuthorizeSecurityGroupIngressResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPRULEIN="${BASH_REMATCH[1]}"
@@ -164,9 +166,9 @@ createSecurityGroupRules() {
 
 
 
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=AuthorizeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=icmp&IpPermissions.1.FromPort=-1&IpPermissions.1.ToPort=-1&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=AuthorizeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=icmp&IpPermissions.1.FromPort=-1&IpPermissions.1.ToPort=-1&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<AuthorizeSecurityGroupIngressResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-d54ec7a7-201f-4f7a-88b0-b1bdcf9fe6e0</requestId> <return>true</return> </AuthorizeSecurityGroupIngressResponse>"
+    #resp="<AuthorizeSecurityGroupIngressResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-d54ec7a7-201f-4f7a-88b0-b1bdcf9fe6e0</requestId> <return>true</return> </AuthorizeSecurityGroupIngressResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPRULEIN="${BASH_REMATCH[1]}"
@@ -176,9 +178,9 @@ createSecurityGroupRules() {
 
 
 
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=AuthorizeSecurityGroupEgress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=AuthorizeSecurityGroupEgress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPRULEOUT="${BASH_REMATCH[1]}"
@@ -187,24 +189,24 @@ createSecurityGroupRules() {
 
 
 
-    #resp=$(echo $(./vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=RevokeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
-    #echo $resp #>> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
-    #regex="(>true<)"
-    #if [[ $resp =~ $regex ]]; then
-    #    REVSECURITYGROUPRULEIN="${BASH_REMATCH[1]}"
-    #fi
-    #die_if_not_set $LINENO $REVSECURITYGROUPRULEIN "Fail to remove SecurityGroupRule - Ingress"
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=RevokeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
+    echo $resp >> $logfile
+    # resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    regex="(>true<)"
+    if [[ $resp =~ $regex ]]; then
+        REVSECURITYGROUPRULEIN="${BASH_REMATCH[1]}"
+    fi
+    die_if_not_set $LINENO $REVSECURITYGROUPRULEIN "Fail to remove SecurityGroupRule - Ingress"
 
 
-    #resp=$(echo $(./vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=RevokeSecurityGroupEgress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=tcp&IpPermissions.1.FromPort=22&IpPermissions.1.ToPort=22&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
-    #echo $resp #>> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
-    #regex="(>true<)"
-    #if [[ $resp =~ $regex ]]; then
-    #    REVSECURITYGROUPRULEOUT="${BASH_REMATCH[1]}"
-    #fi
-    #die_if_not_set $LINENO $REVSECURITYGROUPRULEOUT "Fail to create SecurityGroupRule - Egreass"
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=RevokeSecurityGroupIngress&GroupId=$SECURITYGROUP&IpPermissions.1.IpProtocol=icmp&IpPermissions.1.FromPort=0&IpPermissions.1.ToPort=65535&IpPermissions.1.IpRanges.1.CidrIP=0.0.0.0/0&Version=2015-10-01") | source /dev/stdin)
+    echo $resp >> $logfile
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    regex="(>true<)"
+    if [[ $resp =~ $regex ]]; then
+        REVSECURITYGROUPRULEOUT="${BASH_REMATCH[1]}"
+    fi
+    die_if_not_set $LINENO $REVSECURITYGROUPRULEOUT "Fail to create SecurityGroupRule - Ingress - ICMP"
 
 
     echo "0 CreateSecurityGroupRules - Successfully Created/Deleted Security Group Rules"    
@@ -215,9 +217,9 @@ createSecurityGroupRules() {
 
 describeSeucrityGroup() {
 
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DescribeSecurityGroups&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DescribeSecurityGroups&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="($SECURITYGROUP)"
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPIDCheck="${BASH_REMATCH[1]}"
@@ -230,9 +232,9 @@ describeSeucrityGroup() {
 
 deleteSecurityGroup() {
 
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DeleteSecurityGroup&GroupId=$SECURITYGROUP&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DeleteSecurityGroup&GroupId=$SECURITYGROUP&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         SECURITYGROUPDELETE="${BASH_REMATCH[1]}"
@@ -245,14 +247,13 @@ deleteSecurityGroup() {
 deleteSubnet() {
 
     #while [[ $iter -lt 5 ]]; do
-        resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DeleteSubnet&SubnetId=$SUBNETID&Version=2015-10-01") | source /dev/stdin)
+        resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DeleteSubnet&SubnetId=$SUBNETID&Version=2015-10-01") | source /dev/stdin)
         echo $resp >> $logfile
-        #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+        #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
         regex="(>true<)"
         if [[ $resp =~ $regex ]]; then
             SUBNETDELETE="${BASH_REMATCH[1]}"
         fi
-        echo "Checking in delete subnet"
     #    if [[ is_set $SUBNETDELETE - ]] ; then
     #        break
     #    fi
@@ -268,9 +269,9 @@ deleteSubnet() {
 
 deleteVpc () {
 
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DeleteVpc&VpcId=$VPCID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DeleteVpc&VpcId=$VPCID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         VPCDELETE="${BASH_REMATCH[1]}"
@@ -282,9 +283,9 @@ deleteVpc () {
 }
 
 terminateInstance () {
-    resp=$(echo $(vpcclient "https://compute.ind-west-1.staging.jiocloudservices.com/?Action=TerminateInstances&InstanceId.1=$INSTANCEID&Version=2016-03-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$COMENDPOINT/?Action=TerminateInstances&InstanceId.1=$INSTANCEID&Version=2016-03-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(<currentState>shutting-down</currentState>)"
     if [[ $resp =~ $regex ]]; then
         TERMINATIONID="${BASH_REMATCH[1]}"
@@ -299,9 +300,9 @@ terminateInstance () {
 
 
 runInstance () {
-    resp=$(echo $(vpcclient "https://compute.ind-west-1.staging.jiocloudservices.com/?Action=RunInstances&SubnetId=$SUBNETID&ImageId=ami-96d337d6&InstanceTypeId=c1.small&Version=2016-03-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$COMENDPOINT/?Action=RunInstances&SubnetId=$SUBNETID&ImageId=ami-01184524&InstanceTypeId=c1.small&Version=2016-03-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="<instanceId>(.*)</instanceId>"
     if [[ $resp =~ $regex ]]; then
         INSTANCEID="${BASH_REMATCH[1]}"
@@ -315,9 +316,9 @@ runInstance () {
 
 
 allocateAddress () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=AllocateAddress&Domain=vpc&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=AllocateAddress&Domain=vpc&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="<allocationId>(.*)</allocationId>"
     if [[ $resp =~ $regex ]]; then
         ALLOCATIONID="${BASH_REMATCH[1]}"
@@ -333,9 +334,9 @@ allocateAddress () {
 }
 
 associateAddress () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=AssociateAddress&AllocationId=$ALLOCATIONID&InstanceId=$INSTANCEID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=AssociateAddress&AllocationId=$ALLOCATIONID&InstanceId=$INSTANCEID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="<associationId>(.*)</associationId>"
     if [[ $resp =~ $regex ]]; then
         ASSOCIATIONID="${BASH_REMATCH[1]}"
@@ -347,9 +348,9 @@ associateAddress () {
 
 
 describeAddresses() {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DescribeAddresses&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DescribeAddresses&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="($ASSOCIATIONID)"
     if [[ $resp =~ $regex ]]; then
         DESCRIBEADD1="${BASH_REMATCH[1]}"
@@ -360,9 +361,9 @@ describeAddresses() {
 }
 
 disassociateAddress () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DisassociateAddress&AssociationId=$ASSOCIATIONID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DisassociateAddress&AssociationId=$ASSOCIATIONID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         DISASSOCIATIONID="${BASH_REMATCH[1]}"
@@ -374,9 +375,9 @@ disassociateAddress () {
 }
 
 releaseAddress () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=ReleaseAddress&AllocationId=$ALLOCATIONID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=ReleaseAddress&AllocationId=$ALLOCATIONID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         RELEASEID="${BASH_REMATCH[1]}"
@@ -388,9 +389,9 @@ releaseAddress () {
 }
 
 createRouteTable () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=CreateRouteTable&VpcId=$VPCID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=CreateRouteTable&VpcId=$VPCID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="<routeTableId>(.*)</routeTableId>"
     if [[ $resp =~ $regex ]]; then
         RTBID="${BASH_REMATCH[1]}"
@@ -401,21 +402,21 @@ createRouteTable () {
 
 
 createRoute () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=CreateRoute&RouteTableId=$RTBID&InstanceId=$INSTANCEID&DestinationCidrBlock=11.11.11.11/32&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=CreateRoute&RouteTableId=$RTBID&InstanceId=$INSTANCEID&DestinationCidrBlock=11.11.11.11/32&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         RT="${BASH_REMATCH[1]}"
     fi
     die_if_not_set $LINENO $RT "CreateRoute - Fail to createRoute"
-    echo "CreateRoute - Successfully Added Route" 
+    echo "0 CreateRoute - Successfully Added Route" 
 }
 
 associateRouteTable () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=AssociateRouteTable&SubnetId=$SUBNETID&RouteTableId=$RTBID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=AssociateRouteTable&SubnetId=$SUBNETID&RouteTableId=$RTBID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="<associationId>(.*)</associationId>"
     if [[ $resp =~ $regex ]]; then
         ASSOCRTBID="${BASH_REMATCH[1]}"
@@ -426,9 +427,9 @@ associateRouteTable () {
 
 
 describeRouteTables () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DescribeRouteTables&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DescribeRouteTables&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="($RTBID)"
     if [[ $resp =~ $regex ]]; then
         CHECKRTBID="${BASH_REMATCH[1]}"
@@ -438,9 +439,9 @@ describeRouteTables () {
 }
 
 disassociateRouteTable () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DisassociateRouteTable&AssociationId=$ASSOCRTBID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DisassociateRouteTable&AssociationId=$ASSOCRTBID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         DISASSOCRTBID="${BASH_REMATCH[1]}"
@@ -450,9 +451,9 @@ disassociateRouteTable () {
 }
 
 deleteRouteTable () {
-    resp=$(echo $(vpcclient "https://vpc.ind-west-1.staging.jiocloudservices.com/?Action=DeleteRouteTable&RouteTableId=$RTBID&Version=2015-10-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$VPCENDPOINT/?Action=DeleteRouteTable&RouteTableId=$RTBID&Version=2015-10-01") | source /dev/stdin)
     echo $resp >> $logfile
-    #resp="<CreateSubnetResponse xmlns="http://vpc.ind-west-1.jiocloudservices.com/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
+    #resp="<CreateSubnetResponse xmlns="http://$VPCENDPOINT/doc/2015-10-01/"> <requestId>req-db6e717b-49e3-4f49-81e7-d32d3bf9bb6a</requestId> <subnet> <mapPublicIpOnLaunch>false</mapPublicIpOnLaunch> <availableIpAddressCount>252</availableIpAddressCount> <defaultForAz>false</defaultForAz> <state>available</state> <vpcId>vpc-f46afdc0</vpcId> <subnetId>subnet-54001ea9</subnetId> <cidrBlock>192.168.1.0/24</cidrBlock> </subnet> </CreateSubnetResponse>"
     regex="(>true<)"
     if [[ $resp =~ $regex ]]; then
         DISASSOCRTBID="${BASH_REMATCH[1]}"
@@ -462,7 +463,7 @@ deleteRouteTable () {
 }
 
 describeInstances() {
-    resp=$(echo $(vpcclient "https://compute.ind-west-1.staging.jiocloudservices.com/?Action=DescribeInstances&Version=2016-03-01") | source /dev/stdin)
+    resp=$(echo $(vpcclient "https://$COMENDPOINT/?Action=DescribeInstances&Version=2016-03-01") | source /dev/stdin)
     echo $resp >> $logfile
 }
 
@@ -491,11 +492,11 @@ deleteRouteTable
 
 disassociateAddress
 releaseAddress
-sleep 30
+#sleep 15
 terminateInstance
-sleep 30
+#sleep 30
 deleteSecurityGroup
-sleep 30
+sleep 15
 describeInstances
 deleteSubnet
 deleteVpc
